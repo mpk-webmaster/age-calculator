@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>League Age Calculator</title>
+  <style type="text/css">
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+    .pagediv { width: 800px; margin: 0 auto; text-align: center; }
+    .logo { margin: 20px 0; }
+    .info { margin: 20px 0; font-size: 16px; }
+    .info h3 { margin: 0; }
+    .info h6 { font-style: italic; font-size: 11px; margin: 5px 0; }
+    .checkform {
+      width: 320px; margin: 0 auto; border-radius: 15px 50px 30px;
+      background: #88b234; padding: 20px; text-align: center; color: #fff;
+    }
+    .ddfield { font-size: 18px; margin: 10px 5px; padding: 5px; }
+    .ddcheckbutton {
+      font-size: 20px; margin-top: 20px; padding: 10px 20px;
+      border-radius: 10px; cursor: pointer; background-color: #fff; color: #000000; border: none;
+    }
+    .responsestyle {
+      width: 250px; margin: 20px auto; background: #FFF;
+      border-radius: 10px; display: none; font-size: 16px; padding: 10px; color: #000;
+      text-align: center;
+    }
+    .iptFields { margin-top: 5px; border: 0px; text-align: center; font-size: 70px; width: 100px; }
+    .iptText { margin: 5px 0; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <div class="pagediv">
+    <img src="images/mpklogo.png" alt="MPK Logo" class="logo">
+    <div class="info">
+      <h3>This calculator determines the "League Age" and Division of Pony Baseball and USA Softball.</h3>
+      <h6 style="font-style:italic; font-size:11px;">*League Age is determined by a player's age on the chosen cutoff (Baseball = April 30, Softball = Aug 30).* </h6>
+    </div>
+
+    <div class="checkform">
+      <form name="datecheckform" id="datecheckform" onsubmit="return false;">
+        <select name="strMonth" id="strMonth" class="ddfield" onChange="hideanswer()">
+          <option value="01">January</option><option value="02">February</option><option value="03">March</option>
+          <option value="04">April</option><option value="05">May</option><option value="06">June</option>
+          <option value="07">July</option><option value="08">August</option><option value="09">September</option>
+          <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+        </select>
+
+        <select name="strDay" id="strDay" class="ddfield" onChange="hideanswer()">
+          <script>
+            for (let d = 1; d <= 31; d++) {
+              document.write('<option value="' + (d < 10 ? "0" + d : d) + '">' + d + '</option>');
+            }
+          </script>
+        </select>
+
+        <select name="strYear" id="strYear" class="ddfield" onChange="hideanswer()">
+          <script>
+            for (let y = 2021; y >= 2011; y--) {
+              document.write('<option value="' + y + '">' + y + '</option>');
+            }
+          </script>
+        </select>
+
+        <select name="sport" id="sport" class="ddfield" onChange="hideanswer()">
+          <option value="baseball">Baseball</option>
+          <option value="softball">Softball</option>
+        </select>
+
+        <br />
+        <input type="button" onClick="checkAge()" value="Check Age" class="ddcheckbutton" />
+        <br />
+
+        <div class="responsestyle" id="responsediv">
+          <h3 class="iptText"><span id="yearText1"></span> Calculated League Age</h3>
+          <input type="text" name="iptAge" id="iptAge" readonly class="iptFields" />
+          <h3 class="iptText"><span id="yearText2"></span> Calculated Division</h3>
+          <img src="images/empty.png" border="0" id="divimage" width="252" height="171" alt="Division" />
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // --- Images ---
+    var imgShetland = "images/shetland.png";
+    var imgPinto    = "images/pinto.png";
+    var imgMustang  = "images/mustang.png";
+    var imgBronco   = "images/bronco.png";
+    var imgPony     = "images/pony.png";
+    var img8u       = "images/eight.png";
+    var img10u      = "images/ten.png";
+    var img12u      = "images/twelve.png";
+    var img14u      = "images/fourteen.png";
+    var imgNone     = "images/NoDiv.png";
+    var clearimage  = "images/empty.png";
+    var imagesource = "";
+    var imagealt    = "Division";
+
+    // --- Year logic ---
+    var gd = new Date();
+    var gcurmonth = gd.getMonth(); // 0-based
+    var gstryear = gd.getFullYear();
+    var rollovermonth = 6;
+    rollovermonth = rollovermonth - 2; // original logic => 4
+    if (gcurmonth > rollovermonth) {
+      gstryear = gstryear + 1;
+    }
+    document.getElementById("yearText1").innerText = gstryear;
+    document.getElementById("yearText2").innerText = gstryear;
+
+    function calculateAge(birthDate, cutoffDate) {
+      var years = cutoffDate.getFullYear() - birthDate.getFullYear();
+      if (cutoffDate.getMonth() < birthDate.getMonth() || (cutoffDate.getMonth() === birthDate.getMonth() && cutoffDate.getDate() < birthDate.getDate())) {
+        years--;
+      }
+      return years;
+    }
+
+    function checkAge() {
+      var sm = parseInt(document.getElementById("strMonth").value, 10);
+      var sd = parseInt(document.getElementById("strDay").value, 10);
+      var sy = parseInt(document.getElementById("strYear").value, 10);
+      var birthDate = new Date(sy, sm - 1, sd);
+
+      var sport = document.getElementById("sport").value;
+      var cutoffDate;
+
+      if (sport === "baseball") {
+        cutoffDate = new Date(gstryear, 3, 30); // April 30
+      } else {
+        cutoffDate = new Date(gstryear - 1, 7, 30); // August 30 previous year
+      }
+
+      if (isNaN(birthDate.getTime())) {
+        alert("Invalid birth date selected.");
+        return;
+      }
+
+      var age = calculateAge(birthDate, cutoffDate);
+
+      if (isNaN(age) || age < 0) {
+        document.getElementById("iptAge").value = "";
+        imagesource = imgNone;
+        imagealt = "None";
+      } else {
+        document.getElementById("iptAge").value = age.toString();
+
+        if (sport === "baseball") {
+          if (age <= 4) { imagesource = imgNone; imagealt = "None"; }
+          else if (age <= 6) { imagesource = imgShetland; imagealt = "Shetland"; }
+          else if (age <= 8) { imagesource = imgPinto; imagealt = "Pinto"; }
+          else if (age <= 10) { imagesource = imgMustang; imagealt = "Mustang"; }
+          else if (age <= 12) { imagesource = imgBronco; imagealt = "Bronco"; }
+          else if (age <= 15) { imagesource = imgPony; imagealt = "Pony"; }
+          else { imagesource = imgNone; imagealt = "None"; }
+        } else {
+          if (age <= 6) { imagesource = imgNone; imagealt = "None"; }
+          else if (age <= 8) { imagesource = img8u; imagealt = "8U Softball"; }
+          else if (age <= 10) { imagesource = img10u; imagealt = "10U Softball"; }
+          else if (age <= 12) { imagesource = img12u; imagealt = "12U Softball"; }
+          else if (age <= 14) { imagesource = img14u; imagealt = "14U Softball"; }
+          else { imagesource = imgNone; imagealt = "None"; }
+        }
+      }
+
+      document.getElementById("divimage").src = imagesource;
+      document.getElementById("divimage").alt = imagealt;
+      document.getElementById("responsediv").style.display = "block";
+    }
+
+    function hideanswer() {
+      document.getElementById("responsediv").style.display = "none";
+      document.getElementById("divimage").src = clearimage;
+    }
+  </script>
+</body>
+</html>
